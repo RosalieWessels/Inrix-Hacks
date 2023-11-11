@@ -62,6 +62,8 @@ async function getAddresses() {
 
     let token = await getToken();
     console.log("TOKEN", token);
+
+    await getTravelTimesForTime(token);
 }
 
 
@@ -85,18 +87,20 @@ async function getToken() {
     return token;
 };
 
-async function getTravelTimesForTime() {
-     // const myHeaders = new Headers();
-    // myHeaders.append('Content-Type', 'application/json');
-    // myHeaders.append('Authorization', 'Bearer <your-token>');
+async function getTravelTimesForTime(token) {
+    const myHeaders = new Headers();
+    myHeaders.append('Content-Type', 'application/json');
+    let bearer = 'Bearer ' + token;
+    console.log(bearer);
+    myHeaders.append('Authorization', bearer);
 
-    // fetch('<your-api-endpoint>', {
-    // method: 'GET',
-    // headers: myHeaders,
-    // })
-    // .then(response => response.json())
-    // .then(data => console.log(data))
-    // .catch(error => console.log(error));
+    await fetch('https://api.iq.inrix.com/findRoute?wp_1=37.770581%2C-122.4425500&wp_2=37.765297%2C-122.442527&format=json', {
+    method: 'GET',
+    headers: myHeaders,
+    })
+    .then(response => response.json())
+    .then(data => console.log(data))
+    .catch(error => console.log(error));
 }
 
   
