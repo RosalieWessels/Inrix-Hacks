@@ -13,14 +13,19 @@
     <div class="top-box">
         <div class="gradient-border address-div">
             <h3 class="text-font">Enter Addresses</h3>
-            ​<textarea class="address-box" rows="30" cols="50"></textarea>
+            ​<textarea class="address-box" id="address-box" rows="30" cols="50"></textarea>
+            
         </div>
 
         <div class="gradient-border times-div">
-            <h3 class="text-font">Arrival Times</h3>
+            <h3 class="text-font">Destination + Times</h3>
+            <input type="text" id="destination-address">
+            <input type="time">
+            <button onclick="getAddresses()">Submit</button>
         </div> 
     </div>
     
-   
+
+    <script src="index.js"></script>
 </body>
 </html>
