@@ -94,6 +94,11 @@ async function getAddresses() {
 
     var travelInfoList = await getTravelTimesForTime(token, destination, addresses, date, startTime, endTime);
     console.log("FININALLY FINISHED", travelInfoList);
+
+    calculateBestArrivalTime(travelInfoList, startTime);
+    
+    loadChart(travelInfoList);
+
 }
 
 
@@ -141,6 +146,7 @@ async function getTravelTimesForTime(token, destination, addresses, date, startT
         console.log("ARRIVAL TIME", arrivalTime);
 
         var array = [];
+        var timesList = [];
         for (var i = 0; i < addresses.length; i++) {
             await fetch(`https://api.iq.inrix.com/findRoute?wp_1=${addresses[i].lat}%2C${addresses[i].lon}&wp_2=${destination.lat}%2C${destination.lon}&arrivalTime=${arrivalTime}&format=json`, {
             method: 'GET',
@@ -150,6 +156,7 @@ async function getTravelTimesForTime(token, destination, addresses, date, startT
             .then(data => {
                 console.log(data);
                 console.log("TRAVEL TIME", data.result.trip.routes[0].travelTimeMinutes);
+                timesList.push(data.result.trip.routes[0].travelTimeMinutes);
                 array.push({"travelTimeWT" : data.result.trip.routes[0].travelTimeMinutes, "travelTimeNT" : data.result.trip.routes[0].uncongestedTravelTimeMinutes});
             }) 
             .catch(error => console.log(error));
@@ -160,7 +167,9 @@ async function getTravelTimesForTime(token, destination, addresses, date, startT
             }
             await delay(200);
         } 
-        travelInfoList.push({"arrivalTime" : times[j], "travel" : array}); 
+        let sum = timesList.reduce((a, b) => a + b);
+        let averageTime = sum/timesList.length
+        travelInfoList.push({"arrivalTime" : times[j], "travel" : array, "averageTime" : averageTime}); 
     }    
     return travelInfoList;
 }
@@ -192,3 +201,55 @@ function addMarkers(destination, addresses) {
 }
   
   
+function calculateBestArrivalTime(travelInfoList, start) {
+    let lowestTime = 100000000;
+    let bestTime = start;
+    for (i = 0; i < travelInfoList.length; i++) {
+        console.log("ITEM IN TRAVEL INFO LIST", travelInfoList[i]);
+        if (travelInfoList[i].averageTime < lowestTime) {
+            console.log("less than, will update best time with time", travelInfoList[i].arrivalTime);
+            lowestTime = travelInfoList[i].averageTime;
+            bestTime = travelInfoList[i].arrivalTime;
+        }
+    }
+
+    console.log("Best time to leave", bestTime);
+    document.getElementById("arrivalTime").textContent = `The best time to leave is ${bestTime} with an average travel time of ${lowestTime.toFixed(2)} minutes`
+}
+
+function loadChart(travelInfoList) {
+    const ctx = document.getElementById('myChart');
+    
+    let arrivalTimes = [];
+    let averageTimes = [];
+
+    for (i = 0; i < travelInfoList.length; i++) {
+        arrivalTimes.push(travelInfoList[i].arrivalTime);
+        averageTimes.push(travelInfoList[i].averageTime);
+    }
+
+
+    const xValues = [50,60,70,80,90,100,110,120,130,140,150];
+    const yValues = [7,8,8,9,9,9,10,11,14,14,15];
+
+    new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: arrivalTimes,
+        datasets: [{
+        label : "Travel Times",
+        backgroundColor:"rgba(0,0,255,1.0)",
+        borderColor: "rgba(0,0,255,0.1)",
+        data: averageTimes
+        }]
+    },
+    options: {
+        scales: {
+        y: {
+            beginAtZero: true
+        }
+        },
+        legend: {display: false}
+    }
+    });   
+}

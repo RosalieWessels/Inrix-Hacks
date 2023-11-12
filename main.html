@@ -32,10 +32,21 @@
             <h6 class="text-font">Event Latest Start Time</h6>
             <input type="time" id="event-end-time">
             <button onclick="getAddresses()">Submit</button>
+            <h4 class="text-font">Best calculated time for event:</h4>
+            <h4 class="text-font" id="arrivalTime"></h4>
+            <div style="z-index : 3;">
+              <canvas id="myChart"></canvas>
+          </div>
         </div> 
     </div>
-    
 
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+      
+    </script>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
     <script src="index.js"></script>
 </body>
