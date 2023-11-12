@@ -7,6 +7,9 @@ app.set('json spaces', 2);
 
 // to query, call: http://localhost:8000/gettoken
 
+const cors = require("cors");
+app.use(cors());
+
 app.get('/gettoken', async function (req, res) {
 
     //Set up URL to query
