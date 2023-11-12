@@ -1,5 +1,6 @@
 var addresses = [];
 var destination = {};
+initializeMap();
 
 async function getCoordinates(myaddress, destinationString) {
     await fetch("https://geocode.maps.co/search?q=" + destinationString) 
@@ -150,6 +151,30 @@ function getTimesBetween(start, end) {
         current.setMinutes(current.getMinutes() + 30);
     }
     return times;
+}
+
+
+function initializeMap() {
+    var lat            = 37.773972;
+    var lon            =  -122.431297;
+    var zoom           = 14;
+
+    var fromProjection = new OpenLayers.Projection("EPSG:4326");   // Transform from WGS 1984
+    var toProjection   = new OpenLayers.Projection("EPSG:900913"); // to Spherical Mercator Projection
+    var position       = new OpenLayers.LonLat(lon, lat).transform( fromProjection, toProjection);
+
+    map = new OpenLayers.Map("Map");
+    var mapnik         = new OpenLayers.Layer.OSM();
+    map.addLayer(mapnik);
+
+    var markers = new OpenLayers.Layer.Markers("Markers");
+    var size = new OpenLayers.Size(40,40);
+    var icon = new OpenLayers.Icon('marker.png', size);
+    map.addLayer(markers);
+
+    markers.addMarker(new OpenLayers.Marker(position, icon));
+
+    map.setCenter(position, zoom);
 }
 
   
