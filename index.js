@@ -55,6 +55,9 @@ async function getCoordinates(myaddress, destinationString) {
 async function getAddresses() {
     var myaddress = document.getElementById("address-box").value.split("\n");
     var destinationString = document.getElementById("destination-address").value;
+    var date = document.getElementById("event-date").value;
+    var startTime = document.getElementById("event-start-time").value;
+    var endTime = document.getElementById("event-end-time").value;
 
     destination, addresses = await getCoordinates(myaddress, destinationString);
 
@@ -63,7 +66,8 @@ async function getAddresses() {
     let token = await getToken();
     console.log("TOKEN", token);
 
-    await getTravelTimesForTime(token, destination, addresses);
+    var travelInfoList = await getTravelTimesForTime(token, destination, addresses, date, startTime, endTime);
+    console.log("FININALLY FINISHED", travelInfoList);
 }
 
 
@@ -87,7 +91,7 @@ async function getToken() {
     return token;
 };
 
-async function getTravelTimesForTime(token, destination, addresses) {
+async function getTravelTimesForTime(token, destination, addresses, date, startTime, endTime) {
     const delay = ms => new Promise(res => setTimeout(res, ms));
     const myHeaders = new Headers();
     myHeaders.append('Content-Type', 'application/json');
@@ -95,24 +99,58 @@ async function getTravelTimesForTime(token, destination, addresses) {
     console.log(bearer);
     myHeaders.append('Authorization', bearer);
 
-    for (var i = 0; i < addresses.length; i++) {
-        await fetch(`https://api.iq.inrix.com/findRoute?wp_1=${addresses[i].lat}%2C${addresses[i].lon}&wp_2=${destination.lat}%2C${destination.lon}&arrivalTime=2024-04-04T13%3A42%3A41Z&format=json`, {
-        method: 'GET',
-        headers: myHeaders,
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log(data);
-            console.log("TRAVEL TIME", data.result.trip.routes[0].travelTimeMinutes);
-        })
-        .catch(error => console.log(error));
+    //get all times the concert could possibly start
+    console.log("DATE, STARTTIME, ENDTIME", date, startTime, endTime);
+    var st = moment(startTime, "HH:mm");
+    var et = moment(endTime, "HH:mm");
+    
+    let times = getTimesBetween(st, et);
+    console.log(times);
 
-        //CHANGE POTENTIAL TIME
-        if (((i-1) % 3) == 0) {
-            await delay(1000)
-        }
-        await delay(100);
-    }   
+    var travelInfoList = [];
+
+    for (var j = 0; j < times.length; j++) {
+        //example 2009-04-04T13:42:41Z, worked: 2024-04-04T13%3A42%3A41Z
+        let arrivalTime = date + "T" + times[j] + ":00Z";
+        console.log("ARRIVAL TIME", arrivalTime);
+
+        var array = [];
+        for (var i = 0; i < addresses.length; i++) {
+            await fetch(`https://api.iq.inrix.com/findRoute?wp_1=${addresses[i].lat}%2C${addresses[i].lon}&wp_2=${destination.lat}%2C${destination.lon}&arrivalTime=${arrivalTime}&format=json`, {
+            method: 'GET',
+            headers: myHeaders,
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                console.log("TRAVEL TIME", data.result.trip.routes[0].travelTimeMinutes);
+                array.push({"travelTimeWT" : data.result.trip.routes[0].travelTimeMinutes, "travelTimeNT" : data.result.trip.routes[0].uncongestedTravelTimeMinutes});
+            }) 
+            .catch(error => console.log(error));
+
+            //CHANGE POTENTIAL TIME
+            if (((i-1) % 3) == 0) {
+                await delay(1500)
+            }
+            await delay(200);
+        } 
+        travelInfoList.push({"arrivalTime" : times[j], "travel" : array}); 
+    }    
+    return travelInfoList;
 }
 
+  
+function getTimesBetween(start, end) {
+    const times = [];
+    let current = new Date(start);
+    while (current <= end) {
+        let time = current.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        let t = moment(time,"H:mm A").format("HH:mm");
+        times.push(t);
+        current.setMinutes(current.getMinutes() + 30);
+    }
+    return times;
+}
+
+  
   
