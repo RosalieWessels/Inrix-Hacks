@@ -1,7 +1,30 @@
 var addresses = [];
 var destination = {};
-initializeMap();
 
+//initialize map
+var lat            = 37.773972;
+var lon            =  -122.431297;
+var zoom           = 13;
+
+var fromProjection = new OpenLayers.Projection("EPSG:4326");   // Transform from WGS 1984
+var toProjection   = new OpenLayers.Projection("EPSG:900913"); // to Spherical Mercator Projection
+var position       = new OpenLayers.LonLat(lon, lat).transform( fromProjection, toProjection);
+
+map = new OpenLayers.Map("Map");
+var mapnik         = new OpenLayers.Layer.OSM();
+map.addLayer(mapnik);
+
+var markers = new OpenLayers.Layer.Markers("Markers");
+var size = new OpenLayers.Size(40,40);
+var icon = new OpenLayers.Icon('marker.png', size);
+var icon2 = new OpenLayers.Icon("marker2.png", size);
+map.addLayer(markers);
+
+//markers.addMarker(new OpenLayers.Marker(position, icon));
+
+map.setCenter(position, zoom);
+
+//functions
 async function getCoordinates(myaddress, destinationString) {
     await fetch("https://geocode.maps.co/search?q=" + destinationString) 
     .then(response => { 
@@ -61,6 +84,8 @@ async function getAddresses() {
     var endTime = document.getElementById("event-end-time").value;
 
     destination, addresses = await getCoordinates(myaddress, destinationString);
+
+    addMarkers(destination, addresses);
 
     console.log(destination, addresses);
 
@@ -154,28 +179,16 @@ function getTimesBetween(start, end) {
 }
 
 
-function initializeMap() {
-    var lat            = 37.773972;
-    var lon            =  -122.431297;
-    var zoom           = 14;
-
-    var fromProjection = new OpenLayers.Projection("EPSG:4326");   // Transform from WGS 1984
-    var toProjection   = new OpenLayers.Projection("EPSG:900913"); // to Spherical Mercator Projection
-    var position       = new OpenLayers.LonLat(lon, lat).transform( fromProjection, toProjection);
-
-    map = new OpenLayers.Map("Map");
-    var mapnik         = new OpenLayers.Layer.OSM();
-    map.addLayer(mapnik);
-
-    var markers = new OpenLayers.Layer.Markers("Markers");
-    var size = new OpenLayers.Size(40,40);
-    var icon = new OpenLayers.Icon('marker.png', size);
-    map.addLayer(markers);
-
-    markers.addMarker(new OpenLayers.Marker(position, icon));
-
-    map.setCenter(position, zoom);
+function addMarkers(destination, addresses) {
+    console.log("MADE IT INTO ADD MARKERS");
+    for (i = 0; i < addresses.length; i++) {
+        var position = new OpenLayers.LonLat(addresses[i].lon, addresses[i].lat).transform( fromProjection, toProjection);
+        var icon3 = new OpenLayers.Icon('marker.png', size);
+        markers.addMarker(new OpenLayers.Marker(position, icon3));
+    }
+    console.log("position to add marker", destination.lat, destination.lon);
+    var position2 = new OpenLayers.LonLat(destination.lon, destination.lat).transform( fromProjection, toProjection);
+    markers.addMarker(new OpenLayers.Marker(position2, icon2));
 }
-
   
   
