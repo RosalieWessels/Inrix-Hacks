@@ -63,7 +63,7 @@ async function getAddresses() {
     let token = await getToken();
     console.log("TOKEN", token);
 
-    await getTravelTimesForTime(token);
+    await getTravelTimesForTime(token, destination, addresses);
 }
 
 
@@ -87,20 +87,32 @@ async function getToken() {
     return token;
 };
 
-async function getTravelTimesForTime(token) {
+async function getTravelTimesForTime(token, destination, addresses) {
+    const delay = ms => new Promise(res => setTimeout(res, ms));
     const myHeaders = new Headers();
     myHeaders.append('Content-Type', 'application/json');
     let bearer = 'Bearer ' + token;
     console.log(bearer);
     myHeaders.append('Authorization', bearer);
 
-    await fetch('https://api.iq.inrix.com/findRoute?wp_1=37.770581%2C-122.4425500&wp_2=37.765297%2C-122.442527&format=json', {
-    method: 'GET',
-    headers: myHeaders,
-    })
-    .then(response => response.json())
-    .then(data => console.log(data))
-    .catch(error => console.log(error));
+    for (var i = 0; i < addresses.length; i++) {
+        await fetch(`https://api.iq.inrix.com/findRoute?wp_1=${addresses[i].lat}%2C${addresses[i].lon}&wp_2=${destination.lat}%2C${destination.lon}&arrivalTime=2024-04-04T13%3A42%3A41Z&format=json`, {
+        method: 'GET',
+        headers: myHeaders,
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            console.log("TRAVEL TIME", data.result.trip.routes[0].travelTimeMinutes);
+        })
+        .catch(error => console.log(error));
+
+        //CHANGE POTENTIAL TIME
+        if (((i-1) % 3) == 0) {
+            await delay(1000)
+        }
+        await delay(100);
+    }   
 }
 
   
