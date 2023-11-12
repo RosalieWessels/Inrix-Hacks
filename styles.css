@@ -22,13 +22,14 @@ p {
 
 .address-div {
     width: 44%;
-    height: 280px;
+    height: 200px;
     padding: 10px;
+    opacity: 0.85;
 }
 
 .address-box {
     width: 100%;
-    height: 65%;
+    height: 50%;
     resize: none;
 }
 
@@ -62,5 +63,6 @@ p {
 
 .times-div {
     width: 30%;
-    height: 200px;
+    height: 360px;
+    opacity: 0.85;
 }
