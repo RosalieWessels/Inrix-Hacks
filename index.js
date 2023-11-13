@@ -214,7 +214,7 @@ function calculateBestArrivalTime(travelInfoList, start) {
     }
 
     console.log("Best time to leave", bestTime);
-    document.getElementById("arrivalTime").textContent = `The best time to leave is ${bestTime} with an average travel time of ${lowestTime.toFixed(2)} minutes`
+    document.getElementById("arrivalTime").textContent = `The best time to start is ${bestTime} with an average travel time of ${lowestTime.toFixed(2)} minutes`
 }
 
 function loadChart(travelInfoList) {
